@@ -9,6 +9,8 @@
 #include <fstream>
 #include <sstream>
 #include <unordered_set>
+#include <codecvt>
+#include <locale>
 #include "il2cpp-object-internals.h"
 #include "modloader/shared/modloader.hpp"
 #include "shared/utils/gc-alloc.hpp"
@@ -327,27 +329,12 @@ void setcsstr(Il2CppString* in, std::u16string_view str) {
     in->chars[in->length] = (Il2CppChar)'\u0000';
 }
 
-// Inspired by DaNike
 std::string to_utf8(std::u16string_view view) {
-    char* dat = static_cast<char*>(calloc(view.length() + 1, sizeof(char)));
-    std::transform(view.data(), view.data() + view.size(), dat, [](auto utf16_char) {
-        return static_cast<char>(utf16_char);
-    });
-    dat[view.length()] = '\0';
-    std::string out(dat);
-    free(dat);
-    return out;
+    return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.to_bytes(view.data());
 }
 
 std::u16string to_utf16(std::string_view view) {
-    char16_t* dat = static_cast<char16_t*>(calloc(view.length() + 1, sizeof(char16_t)));
-    std::transform(view.data(), view.data() + view.size(), dat, [](auto standardChar) {
-        return static_cast<char16_t>(standardChar);
-    });
-    dat[view.length()] = '\0';
-    std::u16string out(dat);
-    free(dat);
-    return out;
+    return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(view.data());
 }
 
 std::u16string_view csstrtostr(Il2CppString* in)
